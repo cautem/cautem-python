@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+import argparse
 import re
 import subprocess
 import sys
@@ -11,7 +12,7 @@ from pathlib import Path
 
 MODULE_ROOT = Path(__file__).resolve().parents[1]
 WORKSPACE_ROOT = MODULE_ROOT.parent
-GATEWAY_PROTO = WORKSPACE_ROOT / "cautem-gateway" / "api" / "proto"
+CAUTEM_PROTO = WORKSPACE_ROOT / "cautem-proto" / "proto"
 UPSTREAM_PROTO = WORKSPACE_ROOT / "tools" / "upstream" / "openshell" / "proto"
 OPEN_SHELL_OUT = MODULE_ROOT / "cautem" / "_proto" / "openshell"
 
@@ -34,11 +35,26 @@ def generate(proto_root: Path, output: Path, files: list[str]) -> None:
 
 
 def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument(
+        "--control-only",
+        action="store_true",
+        help="regenerate cautem.control.v1 without touching pinned OpenShell output",
+    )
+    args = parser.parse_args()
     generate(
-        GATEWAY_PROTO,
+        CAUTEM_PROTO,
         MODULE_ROOT,
         ["cautem/control/v1/console.proto"],
     )
+    if args.control_only:
+        for directory in (
+            MODULE_ROOT / "cautem" / "control",
+            MODULE_ROOT / "cautem" / "control" / "v1",
+        ):
+            directory.mkdir(parents=True, exist_ok=True)
+            (directory / "__init__.py").touch()
+        return
     generate(
         UPSTREAM_PROTO,
         OPEN_SHELL_OUT,

@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+## [0.1.7] - 2026-10-13
+
+### Changed
+
+- Generate the first-party Python Control API client from the independent `cautem-proto` module.
+- Keep OpenShell generated clients tied to the pinned upstream source revision.
+
 ## [0.1.6] - 2026-10-11
 
 ### Changed

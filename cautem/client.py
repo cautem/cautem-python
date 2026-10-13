@@ -187,7 +187,10 @@ class Client:
             openshell_pb2.GetSandboxRequest(name=name, workspace=self.workspace),
         ).sandbox
         stream = stub.ExecSandbox(
-            openshell_pb2.ExecSandboxRequest(sandbox_id=sandbox.metadata.id, command=list(argv)),
+            openshell_pb2.ExecSandboxRequest(
+                sandbox_id=sandbox.metadata.id,
+                command=list(argv),
+            ),
             timeout=self.timeout,
             metadata=self._metadata,
         )
