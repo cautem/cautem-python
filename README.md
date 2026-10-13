@@ -51,8 +51,10 @@ gateway requires bearer authentication. RPC failures are raised as `grpc.RpcErro
 the health probe uses `httpx` exceptions.
 
 Generated protocol clients are checked in. From this module in the
-multi-repository workspace, regenerate them with `python scripts/generate_proto.py`
-after updating the gateway control Proto or pinned OpenShell source.
+multi-repository workspace, regenerate the first-party API from
+`cautem-proto/proto` with `python scripts/generate_proto.py --control-only`.
+Run `python scripts/generate_proto.py` to also regenerate OpenShell clients when
+the workspace checkout matches `tools/upstream/UPSTREAM_SHA`.
 
 ---
 

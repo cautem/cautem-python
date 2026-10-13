@@ -18,6 +18,7 @@ class _Control(console_pb2_grpc.SandboxServiceServicer):
     def __init__(self):
         self.auth = []
         self.get_names = []
+        self.openshell = None
 
     def _record(self, context):
         metadata = dict(context.invocation_metadata())
@@ -73,6 +74,9 @@ class _Control(console_pb2_grpc.SandboxServiceServicer):
 
 
 class _OpenShell(openshell_pb2_grpc.OpenShellServicer):
+    def __init__(self):
+        self.exec_sandbox_id = ""
+
     def GetSandbox(self, request, context):  # noqa: N802
         return openshell_pb2.SandboxResponse(
             sandbox=openshell_pb2.Sandbox(
@@ -81,6 +85,7 @@ class _OpenShell(openshell_pb2_grpc.OpenShellServicer):
         )
 
     def ExecSandbox(self, request, context):  # noqa: N802
+        self.exec_sandbox_id = request.sandbox_id
         yield openshell_pb2.ExecSandboxEvent(
             stdout=openshell_pb2.ExecSandboxStdout(data=b"hi\n")
         )
@@ -92,9 +97,10 @@ class _OpenShell(openshell_pb2_grpc.OpenShellServicer):
 @pytest.fixture()
 def gateway():
     control = _Control()
+    control.openshell = _OpenShell()
     server = grpc.server(ThreadPoolExecutor(max_workers=4))
     console_pb2_grpc.add_SandboxServiceServicer_to_server(control, server)
-    openshell_pb2_grpc.add_OpenShellServicer_to_server(_OpenShell(), server)
+    openshell_pb2_grpc.add_OpenShellServicer_to_server(control.openshell, server)
     port = server.add_insecure_port("127.0.0.1:0")
     server.start()
     yield "http://127.0.0.1:%s" % port, control
@@ -103,12 +109,13 @@ def gateway():
 
 def test_crud_and_exec(gateway):
     gateway_url, control = gateway
-    with Client(gateway_url, token=" sdk-test-token ") as client:
+    with Client(gateway_url, token=" sdk-test-token ", workspace="team-a") as client:
         client.create(Sandbox(name="demo", image="python:3.12-slim"))
         assert len(client.list()) == 1
         assert client.get("demo").name == "demo"
         result = client.exec("demo", "echo", "hi")
         assert result.exit_code == 0 and result.output == "hi\n"
+        assert control.openshell.exec_sandbox_id == "id-demo"
         with pytest.raises(ConnectUnsupported):
             client.connect("demo")
         client.delete("demo")

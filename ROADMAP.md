@@ -1,6 +1,6 @@
 # Roadmap — cautem-python
 
-Status: **v0.1.6** (stable numbered source release) · HTTP client for [cautem-gateway](https://github.com/cautem/cautem-gateway)
+Status: **v0.1.7** (release prepared) · Python SDK for [cautem-gateway](https://github.com/cautem/cautem-gateway)
 
 ## This module
 
@@ -12,4 +12,4 @@ Status: **v0.1.6** (stable numbered source release) · HTTP client for [cautem-g
 
 ## Release
 
-Independent of Go cascade order · tagged with the same alpha train.
+Independent package version · generated first-party clients come from `cautem-proto`.
